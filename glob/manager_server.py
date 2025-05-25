@@ -273,7 +273,7 @@ import zipfile
 import urllib.request
 
 
-def get_model_dir(data, show_log=False) -> str | None:
+def get_model_dir(data, show_log=False):
     if 'download_model_base' in folder_paths.folder_names_and_paths:
         models_base = folder_paths.folder_names_and_paths['download_model_base'][0][0]
     else:
@@ -1424,6 +1424,12 @@ async def check_whitelist_for_model(item):
     for x in json_obj.get('models', []):
         if x['save_path'] == item['save_path'] and x['base'] == item['base'] and x['filename'] == item['filename']:
             return True
+
+    json_obj = await core.get_data_by_mode('local', 'model-list.json')
+
+    for x in json_obj.get('models', []):
+        if x['save_path'] == item['save_path'] and x['base'] == item['base'] and x['filename'] == item['filename']:
+            return True
         
     return False
 
@@ -1748,11 +1754,6 @@ async def default_cache_update():
 
     logging.info("[ComfyUI-Manager] All startup tasks have been completed.")
 
-    # NOTE: hide migration button temporarily.
-    # if not core.get_config()['skip_migration_check']:
-    #     await core.check_need_to_migrate()
-    # else:
-    #     logging.info("[ComfyUI-Manager] Migration check is skipped...")
 
 threading.Thread(target=lambda: asyncio.run(default_cache_update())).start()
 

@@ -1,6 +1,16 @@
 {
     "custom_nodes": [
         {
+            "author": "Comfy-Org",
+            "title": "ComfyUI React Extension Template",
+            "reference": "https://github.com/Comfy-Org/ComfyUI-React-Extension-Template",
+            "files": [
+                "https://github.com/Comfy-Org/ComfyUI-React-Extension-Template"
+            ],
+            "install_type": "git-clone",
+            "description": "A minimal template for creating React/TypeScript frontend extensions for ComfyUI, with complete boilerplate setup including internationalization and unit testing."
+        },
+        {
             "author": "Suzie1",
             "title": "Guide To Making Custom Nodes in ComfyUI",
             "reference": "https://github.com/Suzie1/ComfyUI_Guide_To_Making_Custom_Nodes",
@@ -310,6 +320,16 @@
                 "https://github.com/zentrocdot/ComfyUI-Turtle_Graphics_Demo"
             ],
             "description": "ComfyUI node for creating some Turtle Graphic demos.", 
+            "install_type": "git-clone"
+        },
+        {
+            "author": "cozy-comfyui",
+            "title": "cozy_ex_dynamic",
+            "reference": "https://github.com/cozy-comfyui/cozy_ex_dynamic",
+            "files": [
+                "https://github.com/cozy-comfyui/cozy_ex_dynamic"
+            ],
+            "description": "Dynamic Node examples for ComfyUI",
             "install_type": "git-clone"
         }
     ]

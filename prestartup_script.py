@@ -21,24 +21,27 @@ import cm_global
 import manager_downloader
 import folder_paths
 
-import datetime
-if hasattr(datetime, 'datetime'):
-    from datetime import datetime
+manager_util.add_python_path_to_env()
+
+import datetime as dt
+
+if hasattr(dt, 'datetime'):
+    from datetime import datetime as dt_datetime
+    
     def current_timestamp():
-        return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        return dt_datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 else:
     # NOTE: Occurs in some Mac environments.
     import time
-    logging.error(f"[ComfyUI-Manager] fallback timestamp mode\n                  datetime module is invalid: '{datetime.__file__}'")
+    logging.error(f"[ComfyUI-Manager] fallback timestamp mode\n                  datetime module is invalid: '{dt.__file__}'")
+    
     def current_timestamp():
         return str(time.time()).split('.')[0]
 
 security_check.security_check()
 
-manager_util.add_python_path_to_env()
-
-cm_global.pip_blacklist = {'torch', 'torchsde', 'torchvision'}
-cm_global.pip_downgrade_blacklist = ['torch', 'torchsde', 'torchvision', 'transformers', 'safetensors', 'kornia']
+cm_global.pip_blacklist = {'torch', 'torchaudio', 'torchsde', 'torchvision'}
+cm_global.pip_downgrade_blacklist = ['torch', 'torchaudio', 'torchsde', 'torchvision', 'transformers', 'safetensors', 'kornia']
 
 
 def skip_pip_spam(x):
@@ -118,12 +121,17 @@ read_config()
 read_uv_mode()
 check_file_logging()
 
-cm_global.pip_overrides = {'numpy': 'numpy<2', 'ultralytics': 'ultralytics==8.3.40'}
+if sys.version_info < (3, 13):
+    cm_global.pip_overrides = {'numpy': 'numpy<2'}
+else:
+    cm_global.pip_overrides = {}
+
 if os.path.exists(manager_pip_overrides_path):
     with open(manager_pip_overrides_path, 'r', encoding="UTF-8", errors="ignore") as json_file:
         cm_global.pip_overrides = json.load(json_file)
-        cm_global.pip_overrides['numpy'] = 'numpy<2'
-        cm_global.pip_overrides['ultralytics'] = 'ultralytics==8.3.40'  # for security
+        
+        if sys.version_info < (3, 13):
+            cm_global.pip_overrides['numpy'] = 'numpy<2'
 
 
 if os.path.exists(manager_pip_blacklist_path):
@@ -618,6 +626,7 @@ def execute_lazy_install_script(repo_path, executable):
         lines = manager_util.robust_readlines(requirements_path)
         for line in lines:
             package_name = remap_pip_package(line.strip())
+            package_name = package_name.split('#')[0].strip()
             if package_name and not is_installed(package_name):
                 if '--index-url' in package_name:
                     s = package_name.split('--index-url')
@@ -689,14 +698,6 @@ def execute_lazy_cnr_switch(target, zip_url, from_path, to_path, no_deps, custom
         file.write('\n'.join(list(extracted)))
 
 
-def execute_migration(moves):
-    import shutil
-    for x in moves:
-        if os.path.exists(x[0]) and not os.path.exists(x[1]):
-            shutil.move(x[0], x[1])
-            print(f"[ComfyUI-Manager] MIGRATION: '{x[0]}' -> '{x[1]}'")
-
-
 script_executed = False
 
 def execute_startup_script():
@@ -753,9 +754,6 @@ def execute_startup_script():
                     elif script[1] == "#LAZY-CNR-SWITCH-SCRIPT":
                         execute_lazy_cnr_switch(script[0], script[2], script[3], script[4], script[5], script[6])
                         execute_lazy_install_script(script[3], script[7])
-
-                    elif script[1] == "#LAZY-MIGRATION":
-                        execute_migration(script[2])
 
                     elif script[1] == "#LAZY-DELETE-NODEPACK":
                         execute_lazy_delete(script[2])
